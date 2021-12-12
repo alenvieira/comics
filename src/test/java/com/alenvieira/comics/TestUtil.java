@@ -1,15 +1,21 @@
 package com.alenvieira.comics;
 
+import com.alenvieira.comics.controller.dto.UserDTO;
+import com.alenvieira.comics.model.Comic;
+import com.alenvieira.comics.model.Creator;
 import com.alenvieira.comics.model.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TestUtil {
 
-    public static String userToJsonString(User user) throws JSONException {
+    public static String userDTOToJsonString(UserDTO user) throws JSONException {
         JSONObject userJson = new JSONObject();
         userJson.put("name", user.getName());
         userJson.put("email", user.getEmail());
@@ -20,6 +26,14 @@ public class TestUtil {
         return userJson.toString();
     }
 
+    public static UserDTO userDTOSample1() {
+        return new UserDTO(userSample1());
+    }
+
+    public static UserDTO userDTOSample2() {
+        return new UserDTO(userSample2());
+    }
+
     public static User userSample1() {
         User user = new User();
         user.setName("Fulano da Silvinha");
@@ -28,6 +42,7 @@ public class TestUtil {
         user.setBirthDate(LocalDate.of(1980, 10, 10));
         return user;
     }
+
     public static User userSample2() {
         User user = new User();
         user.setName("Sicrano Moura");

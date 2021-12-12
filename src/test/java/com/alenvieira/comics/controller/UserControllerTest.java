@@ -1,5 +1,6 @@
 package com.alenvieira.comics.controller;
 
+import com.alenvieira.comics.controller.dto.UserDTO;
 import com.alenvieira.comics.model.User;
 import org.json.JSONObject;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -31,8 +32,8 @@ public class UserControllerTest {
     @Test
     @Order(1)
     public void shouldAddUserAndReturnCreated() throws Exception {
-        String userJson = userToJsonString(userSample1());
-        this.mvc.perform(post("/api/v1/user")
+        String userJson = userDTOToJsonString(userDTOSample1());
+        this.mvc.perform(post("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON).content(userJson))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(userJson));
@@ -41,8 +42,8 @@ public class UserControllerTest {
     @Test
     @Order(2)
     public void shouldFinUserAndReturnOk() throws Exception {
-        String userJson = userToJsonString(userSample1());
-        this.mvc.perform(get("/api/v1/user/1"))
+        String userJson = userDTOToJsonString(userDTOSample1());
+        this.mvc.perform(get("/api/v1/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(userJson));
     }
@@ -50,7 +51,7 @@ public class UserControllerTest {
     @Test
     @Order(3)
     public void shouldFinUserAndReturnNotFound() throws Exception {
-        String userJson = userToJsonString(userSample1());
+        String userJson = userDTOToJsonString(userDTOSample1());
         this.mvc.perform(get("/api/v1/user/2"))
                 .andExpect(status().isNotFound());
     }
@@ -58,8 +59,8 @@ public class UserControllerTest {
    @Test
    @Order(4)
     public void shouldAddDuplicateAndReturnUnprocessableEntity() throws Exception {
-        String userJson = userToJsonString(userSample1());
-        this.mvc.perform(post("/api/v1/user")
+        String userJson = userDTOToJsonString(userDTOSample1());
+        this.mvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON).content(userJson))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(not(containsString("name"))))
@@ -70,9 +71,9 @@ public class UserControllerTest {
 
     @Test
     public void shouldNotCreateUserWhenUserIsBlank() throws Exception {
-        User user = new User();
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        UserDTO user = new UserDTO();
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(user)))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(containsString("name")))
                 .andExpect(content().string(containsString("cpf")))
@@ -85,8 +86,8 @@ public class UserControllerTest {
     public void shouldNotCreateUserWhenNameIsInvalid() throws Exception {
         User user = userSample2();
         user.setName("");
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(containsString("name")))
                 .andExpect(content().string(not(containsString("cpf"))))
@@ -94,8 +95,8 @@ public class UserControllerTest {
                 .andExpect(content().string(not(containsString("birthDate"))));
 
         user.setName(null);
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(containsString("name")))
                 .andExpect(content().string(not(containsString("cpf"))))
@@ -107,8 +108,8 @@ public class UserControllerTest {
     public void shouldNotCreateUserWhenCPFIsInvalid() throws Exception {
         User user = userSample2();
         user.setCpf("");
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(not(containsString("name"))))
                 .andExpect(content().string(containsString("cpf")))
@@ -116,8 +117,8 @@ public class UserControllerTest {
                 .andExpect(content().string(not(containsString("birthDate"))));
 
         user.setCpf(null);
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(not(containsString("name"))))
                 .andExpect(content().string(containsString("cpf")))
@@ -125,8 +126,8 @@ public class UserControllerTest {
                 .andExpect(content().string(not(containsString("birthDate"))));
 
         user.setCpf("168.812.550-20");
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(not(containsString("name"))))
                 .andExpect(content().string(containsString("cpf")))
@@ -140,8 +141,8 @@ public class UserControllerTest {
     public void shouldNotCreateUserWhenEmailIsInvalid() throws Exception {
         User user = userSample2();
         user.setEmail("");
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(not(containsString("name"))))
                 .andExpect(content().string(not(containsString("cpf"))))
@@ -149,8 +150,8 @@ public class UserControllerTest {
                 .andExpect(content().string(not(containsString("birthDate"))));
 
         user.setEmail(null);
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(not(containsString("name"))))
                 .andExpect(content().string(not(containsString("cpf"))))
@@ -158,8 +159,8 @@ public class UserControllerTest {
                 .andExpect(content().string(not(containsString("birthDate"))));
 
         user.setEmail("emailinvalid");
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(not(containsString("name"))))
                 .andExpect(content().string(not(containsString("cpf"))))
@@ -172,24 +173,13 @@ public class UserControllerTest {
     public void shouldNotCreateUserWhenBirthDateIsInvalid() throws Exception {
         User user = userSample2();
         user.setBirthDate(null);
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userToJsonString(user)))
+        this.mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON).content(userDTOToJsonString(new UserDTO(user))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().string(not(containsString("name"))))
                 .andExpect(content().string(not(containsString("cpf"))))
                 .andExpect(content().string(not(containsString("email"))))
                 .andExpect(content().string(containsString("birthDate")));
-
-        JSONObject userJson = new JSONObject();
-        userJson.put("name", "Betrano Costa");
-        userJson.put("email", "betrano@costa.com");
-        userJson.put("cpf", "749.243.750-12");
-        userJson.put("birthDate", "20-09-1990");
-
-        this.mvc.perform(post("/api/v1/user")
-                        .contentType(MediaType.APPLICATION_JSON).content(userJson.toString()))
-                .andExpect(status().isBadRequest());
-
     }
 
 }
