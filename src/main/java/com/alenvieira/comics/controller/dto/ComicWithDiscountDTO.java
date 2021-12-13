@@ -52,7 +52,7 @@ public class ComicWithDiscountDTO {
 
     public boolean getDiscount(){
         int dayOfWeek = LocalDate.now().getDayOfWeek().getValue();
-        if (dayOfWeek > 6){
+        if (dayOfWeek > 5){
             return false;
         }
         try {
