@@ -1,21 +1,26 @@
 package com.alenvieira.comics.controller;
 
 import com.alenvieira.comics.controller.dto.UserDTO;
+import com.alenvieira.comics.model.Comic;
 import com.alenvieira.comics.model.User;
-import org.json.JSONObject;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
+import com.alenvieira.comics.repository.UserRepository;
+import com.alenvieira.comics.service.ComicService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.HashSet;
+import java.util.Optional;
 
 import static com.alenvieira.comics.TestUtil.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,50 +28,39 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@TestMethodOrder(OrderAnnotation.class)
 public class UserControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
+    @MockBean
+    ComicService comicService;
+
+    @MockBean
+    UserRepository userRepository;
+
     @Test
-    @Order(1)
     public void shouldAddUserAndReturnCreated() throws Exception {
         String userJson = userDTOToJsonString(userDTOSample1());
         this.mvc.perform(post("/api/v1/users")
-                .contentType(MediaType.APPLICATION_JSON).content(userJson))
+                        .contentType(MediaType.APPLICATION_JSON).content(userJson))
                 .andExpect(status().isCreated())
                 .andExpect(content().json(userJson));
     }
 
     @Test
-    @Order(2)
     public void shouldFinUserAndReturnOk() throws Exception {
-        String userJson = userDTOToJsonString(userDTOSample1());
+        when(userRepository.findById(any())).thenReturn(Optional.of(userSample1()));
         this.mvc.perform(get("/api/v1/users/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(userJson));
+                .andExpect(content().json(userDTOToJsonString(userDTOSample1())));
     }
 
     @Test
-    @Order(3)
     public void shouldFinUserAndReturnNotFound() throws Exception {
         String userJson = userDTOToJsonString(userDTOSample1());
         this.mvc.perform(get("/api/v1/user/2"))
                 .andExpect(status().isNotFound());
-    }
-
-   @Test
-   @Order(4)
-    public void shouldAddDuplicateAndReturnUnprocessableEntity() throws Exception {
-        String userJson = userDTOToJsonString(userDTOSample1());
-        this.mvc.perform(post("/api/v1/users")
-                        .contentType(MediaType.APPLICATION_JSON).content(userJson))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(content().string(not(containsString("name"))))
-                .andExpect(content().string(containsString("cpf")))
-                .andExpect(content().string(containsString("email")))
-                .andExpect(content().string(not(containsString("birthDate"))));
     }
 
     @Test
@@ -182,6 +176,29 @@ public class UserControllerTest {
                 .andExpect(content().string(containsString("birthDate")));
     }
 
+    @Test
+    public void shouldAddComicToUserWhenComicExists() throws Exception {
+        User user = userSample1();
+        user.setComics(new HashSet<>());
+        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+        when(comicService.getComic(any())).thenReturn(Optional.of(comicSample1()));
+        this.mvc.perform(post("/api/v1/users/1/comic/1")).andExpect(status().isAccepted());
+    }
+
+    @Test
+    public void shouldNotAddComicToUserWhenComicNotExists() throws Exception {
+        User user = userSample1();
+        user.setComics(new HashSet<>());
+        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+        when(comicService.getComic(any())).thenReturn(Optional.empty());
+        this.mvc.perform(post("/api/v1/users/1/comic/1")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void shouldNotAddComicToUserWhenUserNotExists() throws Exception {
+        when(userRepository.findById(any())).thenReturn(Optional.empty());
+        when(comicService.getComic(any())).thenReturn(Optional.of(comicSample1()));
+        this.mvc.perform(post("/api/v1/users/1/comic/1")).andExpect(status().isNotFound());
+    }
+
 }
-
-

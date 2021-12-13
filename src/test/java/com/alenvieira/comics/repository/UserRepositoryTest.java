@@ -70,6 +70,7 @@ public class UserRepositoryTest {
         assertThrows(ConstraintViolationException.class, () -> userRepository.save(user));
     }
 
+    @Test
     public void shouldDontSaveWhenUserWithoutBirthDateValid(){
         User user = new User();
         user.setName("Fulando da Silvinha");

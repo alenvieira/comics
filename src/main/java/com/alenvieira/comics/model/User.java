@@ -5,6 +5,7 @@ import org.hibernate.validator.constraints.br.CPF;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -23,6 +24,10 @@ public class User {
     private String cpf;
     @Column(name = "birth_date", columnDefinition = "DATE")
     private LocalDate birthDate;
+    @ManyToMany
+    @JoinTable(name = "user_comic", joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "comic_id"))
+    private Set<Comic> comics;
 
     public User() {
     }
@@ -67,4 +72,11 @@ public class User {
         this.birthDate = birthDate;
     }
 
+    public Set<Comic> getComics() {
+        return comics;
+    }
+
+    public void setComics(Set<Comic> comics) {
+        this.comics = comics;
+    }
 }
