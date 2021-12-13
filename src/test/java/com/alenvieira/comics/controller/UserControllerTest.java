@@ -216,4 +216,24 @@ public class UserControllerTest {
         this.mvc.perform(get("/api/v1/users"))
                 .andExpect(status().isOk()).andExpect(content().string(not(containsString("[]"))));
     }
+
+    @Test
+    public void shouldReturnListEmptyWhenComicsNotExists() throws Exception {
+        User user = userSample1();
+        user.setComics(new HashSet<>());
+        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+        this.mvc.perform(get("/api/v1/users/1/comic"))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("[]")));
+    }
+
+    @Test
+    public void shouldReturnListWhenComicsExists() throws Exception {
+        User user = userSample1();
+        user.setComics(new HashSet<>(){{ add(comicSample1()); }});
+        when(userRepository.findById(any())).thenReturn(Optional.of(user));
+        this.mvc.perform(get("/api/v1/users/1/comic"))
+                .andExpect(status().isOk()).andExpect(content().string(not(containsString("[]"))))
+                .andExpect(content().string(containsString("discount")));
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.alenvieira.comics.controller;
 
+import com.alenvieira.comics.controller.dto.ComicWithDiscountDTO;
 import com.alenvieira.comics.controller.dto.UserDTO;
 import com.alenvieira.comics.controller.dto.UserWithComicDTO;
 import com.alenvieira.comics.model.Comic;
@@ -74,5 +75,18 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/{id}/comic")
+    @Transactional
+    public ResponseEntity<Set<ComicWithDiscountDTO>> getComicsUser(@PathVariable Long id) {
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isPresent()){
+            User user = optionalUser.get();
+            Set<ComicWithDiscountDTO> comics = user.getComics().stream().map(comic -> {
+               return new ComicWithDiscountDTO(comic);
+            }).collect(Collectors.toSet());
+            return ResponseEntity.ok(comics);
+        }
+        return ResponseEntity.notFound().build();
+    }
 
 }
