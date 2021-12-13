@@ -15,6 +15,8 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -63,5 +65,14 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @GetMapping()
+    public ResponseEntity<Set<UserDTO>> getUsers() {
+        Set<UserDTO> users = userRepository.findAll().stream().map(user -> {
+            return new UserDTO(user);
+        }).collect(Collectors.toSet());
+        return ResponseEntity.ok(users);
+    }
+
 
 }

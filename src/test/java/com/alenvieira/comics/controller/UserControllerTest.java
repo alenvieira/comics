@@ -13,8 +13,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.alenvieira.comics.TestUtil.*;
 import static org.hamcrest.CoreMatchers.not;
@@ -201,4 +203,17 @@ public class UserControllerTest {
         this.mvc.perform(post("/api/v1/users/1/comic/1")).andExpect(status().isNotFound());
     }
 
+    @Test
+    public void shouldReturnListEmptyWhenUsersNotExists() throws Exception {
+        when(userRepository.findAll()).thenReturn(new ArrayList<>());
+        this.mvc.perform(get("/api/v1/users"))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("[]")));
+    }
+
+    @Test
+    public void shouldReturnListWhenUsersExists() throws Exception {
+        when(userRepository.findAll()).thenReturn(new ArrayList<>(){{ add(userSample1()); add(userSample2());}});
+        this.mvc.perform(get("/api/v1/users"))
+                .andExpect(status().isOk()).andExpect(content().string(not(containsString("[]"))));
+    }
 }
